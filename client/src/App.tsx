@@ -1,24 +1,70 @@
-import React, {useEffect, useState} from 'react';
+import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import Home from './components/Home';
+import Login from './components/LogIn';
+import ChatInterface from './components/ChatInterface';
+import { AuthContextProvider } from './context/AuthContext';
+
+
+function RequireAuth({ children }: { children: JSX.Element }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 function App() {
-  const [message, setMessage] = useState('');
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    fetch('http://localhost:8000/api/hello')
-      .then(response => response.json())
-      .then(data => {
-        setMessage(data.message); 
-      })
-      .catch(error => {
-        console.error('Error fetching data from backend:', error);
-      });
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1>Message from Backend:</h1>
-      <p>{message}</p>
-    </div>
+  <AuthContextProvider>
+
+    <Router>
+      <Routes>
+        {/* Home route */}
+        <Route path="/" element={<Home />} />
+        
+        {/* Login route - redirect to chat if already logged in */}
+        <Route 
+          path="/login" 
+          element={user ? <Navigate to="/chat" replace /> : <Login />}
+        />
+        
+        {/* Protected chat route */}
+        <Route
+          path="/chat"
+          element={
+            <RequireAuth>
+              <ChatInterface />
+            </RequireAuth>
+          }
+        />
+
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  </AuthContextProvider>
   );
 }
 
