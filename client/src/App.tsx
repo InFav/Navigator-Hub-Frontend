@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext';
 import Home from './components/Home';
 import Login from './components/LogIn';
 import ChatInterface from './components/ChatInterface';
+import ContentSchedule from './components/ContentSchedule';
+
 import { AuthContextProvider } from './context/AuthContext';
 
 
@@ -60,6 +62,14 @@ function App() {
           }
         />
 
+        <Route 
+          path="/schedule"
+          element={
+            <RequireAuth>
+              <ContentSchedule />
+            </RequireAuth>
+          }
+        />
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -6,27 +6,37 @@ import axios from 'axios';
 import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { Message } from '../types/chat';
 
+type UserRole = 'mentor' | 'mentee' | null;
+
+
+
+interface ChatResponse {
+  response: string;
+  role?: string;
+  completed?: boolean;
+  phase?: number;
+  schedule?: {
+    persona_id: number;
+    generated_posts: {
+      [key: string]: {
+        Post_content: string;
+        Post_date: string;
+      };
+    };
+  };
+}
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userRole, setUserRole] = useState<'mentor' | 'mentee' | null>(null);
+  const [currentPhase, setCurrentPhase] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const {user, signOut} = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
   };
 
   useEffect(() => {
@@ -42,8 +52,17 @@ const ChatInterface: React.FC = () => {
     setMessages([initialMessage]);
   }, []);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   const sendMessage = async (message: string) => {
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
 
     const userMessage: Message = {
       text: message,
@@ -55,20 +74,50 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/chat', { message });
+      const idToken = await user?.getIdToken();
+      
+      const response = await axios.post<ChatResponse>('http://localhost:8000/chat', 
+        { message },
+        {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        }
+      );
       
       if (response.data.role) {
-        // If role is assigned, update user role
-        setUserRole(response.data.role);
+        setUserRole(response.data.role as UserRole);
+      }
+
+      if (response.data.phase) {
+        setCurrentPhase(response.data.phase);
       }
 
       const botMessage: Message = {
         text: response.data.response,
         sender: 'bot'
       };
-
       setMessages(prevMessages => [...prevMessages, botMessage]);
+
+      // Check if we should redirect to schedule
+      if (response.data.completed && response.data.schedule) {
+        const { persona_id, generated_posts } = response.data.schedule;
+        console.log("Redirecting to schedule with data:", { persona_id, generated_posts });
+        
+        // Add a slight delay to allow the last message to be displayed
+        setTimeout(() => {
+          navigate('/schedule', { 
+            state: {
+              personaId: persona_id,
+              generatedPosts: generated_posts
+            },
+            replace: true  // This will replace the current route in history
+          });
+        }, 1500);  // 1.5 second delay
+      }
+
     } catch (err) {
+      console.error('Chat error:', err);
       const errorMessage: Message = {
         text: 'I apologize, but I encountered an error. Could you please try again?',
         sender: 'bot'
@@ -77,7 +126,7 @@ const ChatInterface: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   const handleVoiceInput = (text: string) => {
     setInputMessage(text);
@@ -90,6 +139,18 @@ const ChatInterface: React.FC = () => {
       sendMessage(inputMessage);
     }
   };
+
+  // Phase indicator component
+  const PhaseIndicator = () => (
+    <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-full">
+      <span className="text-sm font-medium text-gray-600">
+        Phase {currentPhase}
+      </span>
+      <span className="text-xs text-gray-500">
+        {currentPhase === 1 ? 'Profile Analysis' : 'Content Strategy'}
+      </span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -135,11 +196,14 @@ const ChatInterface: React.FC = () => {
       <header className="bg-white border-b border-gray-200 p-4">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-semibold text-gray-800">Professional Journey Chat</h1>
-          {userRole && (
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-            </span>
-          )}
+          <div className="flex items-center space-x-4">
+            <PhaseIndicator />
+            {userRole && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
