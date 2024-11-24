@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { FaLinkedin, FaArrowDown } from 'react-icons/fa';
+import { FaLinkedin, FaArrowDown, FaEnvelope  } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -60,7 +60,6 @@ const Home = () => {
               </h1>
             </a>
           </div>
-
           <div className="absolute right-8 flex items-center gap-12">
             <button
               onClick={() => scrollToSection(productsRef)}
@@ -68,14 +67,12 @@ const Home = () => {
             >
               Products
             </button>
-            {!user && (
               <button
                 onClick={() => navigate('/login')}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity"
               >
                 Login
               </button>
-            )}
           </div>
         </div>
       </nav>
@@ -154,14 +151,23 @@ const Home = () => {
           <h2 className="text-4xl font-bold mb-12 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Connect With Us
           </h2>
-          <a 
-            href="https://www.linkedin.com/company/navigator-hub/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-block p-4 rounded-full bg-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
-          >
-            <FaLinkedin className="w-12 h-12 text-blue-600 hover:text-blue-700" />
-          </a>
+          <div className="flex justify-center items-center gap-8">
+            <a 
+              href="https://www.linkedin.com/company/navigator-hub/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block p-4 rounded-full bg-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
+            >
+              <FaLinkedin className="w-12 h-12 text-blue-600 hover:text-blue-700" />
+            </a>
+            <a 
+              href="mailto:hello@navhub.ai"
+              className="inline-flex items-center gap-3 p-4 rounded-full bg-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
+            >
+              <FaEnvelope className="w-12 h-12 text-blue-600 hover:text-blue-700" />
+              <span className="text-lg font-medium text-blue-600 pr-4">hello@navhub.ai</span>
+            </a>
+          </div>
         </div>
       </section>
 

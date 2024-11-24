@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { Message } from '../types/chat';
+import { Calendar, TrendingUp } from 'lucide-react';
 
 type UserRole = 'mentor' | 'mentee' | null;
 
@@ -30,6 +31,7 @@ const ChatInterface: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userRole, setUserRole] = useState<'mentor' | 'mentee' | null>(null);
+  const [response, setResponse] = useState<ChatResponse | null>(null);
   const [currentPhase, setCurrentPhase] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuth();
@@ -76,7 +78,7 @@ const ChatInterface: React.FC = () => {
     try {
       const idToken = await user?.getIdToken();
       
-      const response = await axios.post<ChatResponse>('http://localhost:8000/chat', 
+      const apiResponse = await axios.post<ChatResponse>('http://localhost:8000/chat', 
         { message },
         {
           headers: {
@@ -85,36 +87,22 @@ const ChatInterface: React.FC = () => {
         }
       );
       
-      if (response.data.role) {
-        setUserRole(response.data.role as UserRole);
+      // Store the response
+      setResponse(apiResponse.data);
+      
+      if (apiResponse.data.role) {
+        setUserRole(apiResponse.data.role as UserRole);
       }
 
-      if (response.data.phase) {
-        setCurrentPhase(response.data.phase);
+      if (apiResponse.data.phase) {
+        setCurrentPhase(apiResponse.data.phase);
       }
 
       const botMessage: Message = {
-        text: response.data.response,
+        text: apiResponse.data.response,
         sender: 'bot'
       };
       setMessages(prevMessages => [...prevMessages, botMessage]);
-
-      // Check if we should redirect to schedule
-      if (response.data.completed && response.data.schedule) {
-        const { persona_id, generated_posts } = response.data.schedule;
-        console.log("Redirecting to schedule with data:", { persona_id, generated_posts });
-        
-        // Add a slight delay to allow the last message to be displayed
-        setTimeout(() => {
-          navigate('/schedule', { 
-            state: {
-              personaId: persona_id,
-              generatedPosts: generated_posts
-            },
-            replace: true  // This will replace the current route in history
-          });
-        }, 1500);  // 1.5 second delay
-      }
 
     } catch (err) {
       console.error('Chat error:', err);
@@ -126,7 +114,7 @@ const ChatInterface: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-};
+  };
 
   const handleVoiceInput = (text: string) => {
     setInputMessage(text);
@@ -226,6 +214,39 @@ const ChatInterface: React.FC = () => {
               </div>
             </div>
           ))}
+
+          {/* Navigation Buttons - Show only when chat is completed */}
+          {messages.length > 0 && 
+           messages[messages.length - 1].sender === 'bot' && 
+           messages[messages.length - 1].text.includes("created your content schedule") && (
+            <div className="flex flex-col items-center space-y-4 mt-6 p-4 bg-white rounded-lg shadow">
+              <button
+                onClick={() => navigate('/schedule', { 
+                  state: {
+                    personaId: response?.schedule?.persona_id,
+                    generatedPosts: response?.schedule?.generated_posts
+                  }
+                })}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+              >
+                <Calendar className="w-5 h-5" />
+                <span>View Content Schedule</span>
+              </button>
+              
+              <button
+                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
+                disabled
+              >
+                <TrendingUp className="w-5 h-5" />
+                <span>Achievement Negotiator Plan</span>
+              </button>
+              
+              <p className="text-sm text-gray-500 italic mt-2">
+                Achievement Negotiator Plan - Coming Soon!
+              </p>
+            </div>
+          )}
+
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800">
