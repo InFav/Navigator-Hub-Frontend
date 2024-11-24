@@ -78,7 +78,7 @@ const ChatInterface: React.FC = () => {
     try {
       const idToken = await user?.getIdToken();
       
-      const apiResponse = await axios.post<ChatResponse>('http://localhost:8000/chat', 
+      const apiResponse = await axios.post<ChatResponse>(`${import.meta.env.VITE_API_URL}/chat`, 
         { message },
         {
           headers: {

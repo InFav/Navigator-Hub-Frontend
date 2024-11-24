@@ -3,6 +3,8 @@ import { User, signInWithPopup, signOut, AuthProvider as FirebaseAuthProvider } 
 import { auth, googleProvider, linkedInProvider } from '../firebase';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -38,7 +40,7 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           try {
-            await axios.get('http://localhost:8000/api/auth/check');
+            await axios.get(`${API_URL}/api/auth/check`);
             setUser(firebaseUser);
             setError(null);
           } catch (error) {
@@ -82,7 +84,7 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
       const result = await signInWithPopup(auth, provider);
       
       // Create/update user in backend
-      await axios.post('http://localhost:8000/api/users', {
+      await axios.post(`${API_URL}/api/users`, {
         email: result.user.email,
         uid: result.user.uid,
         name: result.user.displayName,
@@ -106,7 +108,7 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
 
   const checkExistingAccount = async (email: string): Promise<boolean> => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/users/check-email/${email}`);
+      const response = await axios.get(`${API_URL}/api/users/check-email/${email}`);
       return response.data.exists;
     } catch (error) {
       console.error('Error checking existing account:', error);
@@ -120,7 +122,7 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
       
       // Clear backend session if needed
       try {
-        await axios.post('http://localhost:8000/api/auth/logout', {}, {
+        await axios.post(`${API_URL}/api/auth/logout`, {}, {
           headers: {
             'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
           }
