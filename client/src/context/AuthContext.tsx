@@ -33,6 +33,7 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("Auth state changing, current loading state:", loading);
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       try {
         if (firebaseUser) {
@@ -58,6 +59,8 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
         setError('Authentication error');
       } finally {
         setLoading(false);
+        console.log("Auth state change complete, loading set to false");
+
       }
     });
 
