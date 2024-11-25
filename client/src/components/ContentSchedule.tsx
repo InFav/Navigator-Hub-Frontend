@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { FaSignOutAlt, FaUser, FaPlus } from 'react-icons/fa';
+import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -16,7 +16,6 @@ import {
     IconButton,
     Modal,
     Textarea,
-    CircularProgress,
     Typography,
     Select,
     Option,
@@ -69,7 +68,7 @@ const ContentSchedule: React.FC = () => {
                     console.log("Fetching posts from API for user:", user?.uid);
                     const idToken = await user?.getIdToken();
                     const response = await axios.get(
-                        'http://localhost:8000/api/schedule/' + user?.uid,
+                        `${import.meta.env.VITE_API_URL}/api/schedule/` + user?.uid,
                         {
                             headers: {
                                 'Authorization': `Bearer ${idToken}`
@@ -129,7 +128,7 @@ const ContentSchedule: React.FC = () => {
     const handleEventSubmit = async () => {
         if (selectedDate && user) {
             try {
-                const response = await axios.post('http://localhost:8000/api/events', {
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/events`, {
                     ...eventData,
                     eventDate: selectedDate,
                     userId: user.uid

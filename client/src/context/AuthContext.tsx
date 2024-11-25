@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, signInWithPopup, signOut, AuthProvider as FirebaseAuthProvider } from 'firebase/auth';
+import { User, signInWithPopup, AuthProvider as FirebaseAuthProvider } from 'firebase/auth';
 import { auth, googleProvider, linkedInProvider } from '../firebase';
 import axios from 'axios';
 
