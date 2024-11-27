@@ -8,6 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import FeedbackModal from './FeedbackModal';
 import {
     Box,
     Button,
@@ -24,6 +25,7 @@ import {
 interface Post {
     Post_content: string;
     Post_date: string;
+    post_index?: number;
 }
 
 interface EventData {
@@ -35,7 +37,6 @@ interface EventData {
     eventDate: string;
 }
 
-
 const ContentSchedule: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -45,8 +46,11 @@ const ContentSchedule: React.FC = () => {
     const [events, setEvents] = useState<{ [key: string]: EventData }>({});
     const [openModalPost, setOpenModalPost] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [selectedPostIndex, setSelectedPostIndex] = useState<number | null>(null);
     const [openModalEvent, setOpenModalEvent] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const [eventData, setEventData] = useState<EventData>({
         eventName: '',
         engagementType: 'Conferences',
@@ -105,13 +109,15 @@ const ContentSchedule: React.FC = () => {
         setCurrentDate(currentDate.subtract(1, 'month'));
     };
 
-    const handleOpenModalPost = (post: Post) => {
+    const handleOpenModalPost = (post: Post, index: number) => {
         setSelectedPost(post);
+        setSelectedPostIndex(index);
         setOpenModalPost(true);
     };
 
     const handleCloseModalPost = () => {
         setSelectedPost(null);
+        setSelectedPostIndex(null);
         setOpenModalPost(false);
     };
 
@@ -123,6 +129,36 @@ const ContentSchedule: React.FC = () => {
     const handleCloseModalEvent = () => {
         setSelectedDate(null);
         setOpenModalEvent(false);
+    };
+
+    const handleRegeneratePost = async () => {
+        if (!selectedPost || selectedPostIndex === null) return;
+
+        try {
+            setIsRegenerating(true);
+            const idToken = await user?.getIdToken();
+            
+            const personaId = location.state?.personaId;
+            
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/api/posts/${personaId}/${selectedPostIndex}/regenerate`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                }
+            );
+
+            if (response.data.generated_posts) {
+                setPosts(response.data.generated_posts);
+                setSelectedPost(response.data.generated_posts[selectedPostIndex]);
+            }
+        } catch (error) {
+            console.error('Error regenerating post:', error);
+        } finally {
+            setIsRegenerating(false);
+        }
     };
 
     const handleEventSubmit = async () => {
@@ -158,6 +194,7 @@ const ContentSchedule: React.FC = () => {
             const currentDay = currentDate.date(i).format('YYYY-MM-DD');
             const post = Object.values(posts).find(p => p.Post_date === currentDay);
             const event = events[currentDay];
+            const postIndex = parseInt(Object.keys(posts).find(key => posts[key] === post) || "-1");
 
             calendarDays.push(
                 <Box
@@ -204,7 +241,7 @@ const ContentSchedule: React.FC = () => {
 
                     {post && (
                         <Box
-                            onClick={() => handleOpenModalPost(post)}
+                            onClick={() => handleOpenModalPost(post, postIndex)}
                             sx={{ 
                                 mt: 1,
                                 cursor: 'pointer',
@@ -254,6 +291,18 @@ const ContentSchedule: React.FC = () => {
                                 <FaSignOutAlt className="mr-2" />
                                 Sign Out
                             </button>
+                            <button
+                            onClick={() => setIsFeedbackModalOpen(true)}
+                            className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 z-40"
+                            >
+                            Help Us Improve
+                            </button>
+
+                            <FeedbackModal
+                            isOpen={isFeedbackModalOpen}
+                            onClose={() => setIsFeedbackModalOpen(false)}
+                            userEmail={user?.email ?? undefined}
+                            />
                         </div>
                     </div>
                 </div>
@@ -267,7 +316,6 @@ const ContentSchedule: React.FC = () => {
                         Here's your AI-generated posting schedule. Add events, customize posts, and manage your content.
                     </p>
                 </div>
-
 
                 <Box sx={{ backgroundColor: 'white', p: 4, borderRadius: 2, boxShadow: 1 }}>
                     {/* Calendar Header */}
@@ -314,9 +362,20 @@ const ContentSchedule: React.FC = () => {
                             <CloseIcon />
                         </IconButton>
                         {selectedPost && (
-                            <Typography>
-                                {selectedPost.Post_content}
-                            </Typography>
+                            <>
+                                <Typography sx={{ mb: 3 }}>
+                                    {selectedPost.Post_content}
+                                </Typography>
+                                <Button
+                                    onClick={handleRegeneratePost}
+                                    disabled={isRegenerating}
+                                    variant="outlined"
+                                    color="primary"
+                                    fullWidth
+                                >
+                                    {isRegenerating ? 'Regenerating...' : 'Regenerate Post'}
+                                </Button>
+                            </>
                         )}
                     </Box>
                 </Modal>

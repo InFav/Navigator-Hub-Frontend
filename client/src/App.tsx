@@ -5,9 +5,20 @@ import Home from './components/Home';
 import Login from './components/LogIn';
 import ChatInterface from './components/ChatInterface';
 import ContentSchedule from './components/ContentSchedule';
-
+import { useEffect } from 'react';
 import { AuthContextProvider } from './context/AuthContext';
 
+
+const initializeDarkMode = () => {
+  const savedTheme = localStorage.getItem('theme');
+  
+  if (savedTheme) {
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', prefersDark);
+  }
+};
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -30,6 +41,21 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 function App() {
   const { user, loading } = useAuth();
 
+  useEffect(() => {
+    initializeDarkMode();
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme) {
+        document.documentElement.classList.toggle('dark', mediaQuery.matches);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -42,6 +68,7 @@ function App() {
   <AuthContextProvider>
 
     <Router>
+      <div className="min-h-screen dark:bg-gray-900">
       <Routes>
         {/* Home route */}
         <Route path="/" element={<Home />} />
@@ -73,9 +100,16 @@ function App() {
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </div>
     </Router>
   </AuthContextProvider>
   );
 }
+export const toggleDarkMode = () => {
+  const element = document.documentElement;
+  element.classList.toggle('dark');
+  const isDark = element.classList.contains('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+};
 
 export default App;

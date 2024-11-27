@@ -1,10 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         linkedin: '#0077b5',
+        dark : {
+          bg: '#1a1a1a',
+          card: '#2d2d2d',
+          text: '#e5e5e5'
+        }
       },
       animation: {
         'gradient-xy': 'gradient-xy 15s ease infinite',
@@ -45,7 +51,24 @@ export default {
           xl: '5rem',
           '2xl': '6rem',
         },
-      }
+      },
+      screens: {
+        'xs': '375px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+        'mobile-lg': '430px',
+      },
+      spacing: {
+        '88': '22rem',
+        '128': '32rem',
+      },
+      fontSize: {
+        '2xs': '0.625rem',
+        'mobile-lg': '1.125rem',
+      },
     },
   },
   plugins: [],
