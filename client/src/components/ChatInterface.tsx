@@ -253,35 +253,35 @@ const ChatInterface: React.FC = () => {
 
           {/* Navigation Buttons - Show only when chat is completed */}
           {messages.length > 0 && 
-           messages[messages.length - 1].sender === 'bot' && 
-           messages[messages.length - 1].text.includes("created your content schedule") && (
-            <div className="flex flex-col items-center space-y-4 mt-6 p-4 bg-white rounded-lg shadow">
-              <button
-                onClick={() => navigate('/schedule', { 
-                  state: {
-                    personaId: response?.schedule?.persona_id,
-                    generatedPosts: response?.schedule?.generated_posts
-                  }
-                })}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
-              >
-                <Calendar className="w-5 h-5" />
-                <span>View Content Schedule</span>
-              </button>
-              
-              <button
-                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
-                disabled
-              >
-                <TrendingUp className="w-5 h-5" />
-                <span>Achievement Negotiator Plan</span>
-              </button>
-              
-              <p className="text-sm text-gray-500 italic mt-2">
-                Achievement Negotiator Plan - Coming Soon!
-              </p>
-            </div>
-          )}
+          messages[messages.length - 1].sender === 'bot' && 
+          response?.completed && (  // Instead of checking for specific text
+          <div className="flex flex-col items-center space-y-4 mt-6 p-4 bg-white rounded-lg shadow">
+            <button
+              onClick={() => navigate('/schedule', { 
+                state: {
+                  personaId: response?.schedule?.persona_id,
+                  generatedPosts: response?.schedule?.generated_posts
+                }
+              })}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+            >
+              <Calendar className="w-5 h-5" />
+              <span>View Content Schedule</span>
+            </button>
+            
+            <button
+              className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
+              disabled
+            >
+              <TrendingUp className="w-5 h-5" />
+              <span>Achievement Negotiator Plan</span>
+            </button>
+            
+            <p className="text-sm text-gray-500 italic mt-2">
+              Achievement Negotiator Plan - Coming Soon!
+            </p>
+          </div>
+        )}
 
           {isLoading && (
             <div className="flex justify-start mb-4">
