@@ -153,28 +153,146 @@ const Home = () => {
       {/* Products Section */}
       <section 
         ref={productsRef}
-        className="relative min-h-screen flex items-center transform transition-all duration-1000 scale-90 opacity-0"
+        className="relative min-h-screen flex items-center transform transition-all duration-1000 scale-90 opacity-0 py-20"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Explore Our Products
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto px-4">
-          <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-2 cursor-pointer">
-            <h3 className="text-2xl font-semibold mb-3 text-blue-600 dark:text-blue-400">
-              Influence Navigator
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">
-              Increase your reach on social media with our AI posts generator feature
-            </p>
+          <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+            {/* Influence Navigator Card */}
+            <div className="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <h3 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                  Influence Navigator
+                </h3>
+                <p className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-6">
+                  Strategically Grow Your Personal Influence with AI Assistance
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                  Influence Navigator is your ultimate tool for building and managing your personal influence in professional circles. Whether you're looking to enhance your LinkedIn presence, establish thought leadership, or strategically share your growth journey, our AI-powered platform offers:
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">AI-Driven Content Guidance</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Personalized content suggestions, posting strategies, and analytics to amplify your professional voice.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Growth Tracking and Insights</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Measure the impact of your posts, audience engagement, and influence metrics with actionable insights.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Content Calendar Feature</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Stay consistent with a strategic content plan tailored to your personal brand goals.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Elite Achievers' Community</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Unlock exclusive networking opportunities with our top-tier influencers and achievers.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Talent Navigator Card */}
+            <div className="group p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <h3 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                  Talent Navigator
+                </h3>
+                <div className="inline-block px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 text-sm font-semibold mb-4">
+                  Coming Soon
+                </div>
+                <p className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-6">
+                  Unlock Your Talent Potential with AI-Enhanced Guidance
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                  Talent Navigator is your personal roadmap to skill mastery and career growth. Whether you're advancing your product management skills or exploring new career paths, this AI-powered platform provides:
+                </p>
+              </div>
+
+              <div className="space-y-6 opacity-75">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Goal Discovery and Learning Plans</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Identify, prioritize, and execute on your career goals with tailored AI suggestions.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Personalized Skill Development</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Access structured learning paths aligned with your aspirations and professional needs.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Real-World Opportunities</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Engage in project-based learning, mentorship programs, and exclusive career opportunities.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">Gamified Achievements</h4>
+                    <p className="text-gray-600 dark:text-gray-400">Stay motivated with Achiever Points and unlock access to elite communities and industry events.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-2">
-            <h3 className="text-2xl font-semibold mb-3 text-purple-600 dark:text-purple-400">
-              Talent Navigator
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">Coming Soon...</p>
-          </div>
-        </div>
         </div>
       </section>
 
