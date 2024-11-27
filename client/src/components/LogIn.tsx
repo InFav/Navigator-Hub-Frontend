@@ -76,16 +76,6 @@ const Login = () => {
               <FaGoogle className="w-6 h-6 text-red-500" />
               <span className="text-lg">Continue with Google</span>
             </button>
-
-            <button
-              onClick={() => handleProviderSignIn('linkedin')}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 border border-gray-200 rounded-xl shadow-md 
-                         bg-white text-gray-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <FaLinkedin className="w-6 h-6 text-blue-600" />
-              <span className="text-lg">Continue with LinkedIn</span>
-            </button>
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
