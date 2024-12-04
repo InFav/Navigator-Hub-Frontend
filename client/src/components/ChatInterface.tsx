@@ -26,11 +26,26 @@ interface ChatResponse {
   };
 }
 
+interface ChatHistory {
+  messages: {
+    text: string;
+    sender: 'user' | 'bot';
+    timestamp: string;
+  }[];
+}
+
+interface ChatState {
+  current_phase: number;
+  current_question_index: number;
+  completed: boolean;
+  user_profile: Record<string, any>;
+}
+
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [userRole, setUserRole] = useState<'mentor' | 'mentee' | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>(null);
   const [response, setResponse] = useState<ChatResponse | null>(null);
   const [currentPhase, setCurrentPhase] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -56,35 +71,6 @@ const ChatInterface: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      const initialMessages: Message[] = [
-        {
-          text: "Hi I am Aru, your personal branding assistant powered by Navigator Hub. I am here to save you time in execution of a growth strategy via LinkedIn engagement.",
-          sender: 'bot' as const
-        },
-        {
-          text: "What I need from you is data for strategizing and understanding your career story for the best execution possible.",
-          sender: 'bot' as const
-        },
-        {
-          text: "What's your First and Last Name?",
-          sender: 'bot' as const
-        }
-      ];
-
-      const addMessagesSequentially = async () => {
-        for (let i = 0; i < initialMessages.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          setMessages(prev => [...prev, initialMessages[i]]);
-        }
-      };
-
-      addMessagesSequentially();
-      hasInitialized.current = true;
-    }
-  }, []);
-
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -93,6 +79,82 @@ const ChatInterface: React.FC = () => {
       console.error('Error signing out:', error);
     }
   };
+
+  const initializeChat = async () => {
+    if (!user) return;
+    
+    try {
+      const idToken = await user.getIdToken();
+      
+      // Fetch chat state first
+      const stateResponse = await axios.get<ChatState>(
+        `${import.meta.env.VITE_API_URL}/api/chat/state/${user.uid}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        }
+      );
+
+      setCurrentPhase(stateResponse.data.current_phase);
+      
+      // Fetch chat history
+      const historyResponse = await axios.get<ChatHistory>(
+        `${import.meta.env.VITE_API_URL}/api/chat/history/${user.uid}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        }
+      );
+
+      if (historyResponse.data.messages.length > 0) {
+        setMessages(historyResponse.data.messages);
+        hasInitialized.current = true;
+        
+        // Check if chat was completed
+        if (stateResponse.data.completed) {
+          setResponse({
+            response: "Previous chat completed",
+            completed: true,
+            schedule: undefined // You'll need to fetch this if needed
+          });
+        }
+      } else if (!stateResponse.data.completed && !hasInitialized.current) {
+        // Only show initial messages for new users
+        const initialMessages: Message[] = [
+          {
+            text: "Hi I am Aru, your personal branding assistant powered by Navigator Hub. I am here to save you time in execution of a growth strategy via LinkedIn engagement.",
+            sender: 'bot'
+          },
+          {
+            text: "What I need from you is data for strategizing and understanding your career story for the best execution possible.",
+            sender: 'bot'
+          },
+          {
+            text: "What's your First and Last Name?",
+            sender: 'bot'
+          }
+        ];
+
+        const addMessagesSequentially = async () => {
+          for (let i = 0; i < initialMessages.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setMessages(prev => [...prev, initialMessages[i]]);
+          }
+        };
+
+        addMessagesSequentially();
+        hasInitialized.current = true;
+      }
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+    }
+  };
+
+  useEffect(() => {
+    initializeChat();
+  }, [user]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return;
@@ -109,7 +171,8 @@ const ChatInterface: React.FC = () => {
     try {
       const idToken = await user?.getIdToken();
       
-      const apiResponse = await axios.post<ChatResponse>(`${import.meta.env.VITE_API_URL}/chat`, 
+      const apiResponse = await axios.post<ChatResponse>(
+        `${import.meta.env.VITE_API_URL}/chat`, 
         { message },
         {
           headers: {
@@ -118,7 +181,6 @@ const ChatInterface: React.FC = () => {
         }
       );
       
-      // Store the response
       setResponse(apiResponse.data);
       
       if (apiResponse.data.role) {

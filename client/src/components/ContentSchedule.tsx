@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FeedbackModal from './FeedbackModal';
+
 import {
     Box,
     Button,
@@ -36,6 +37,9 @@ interface EventData {
     deadlines: string;
     eventDate: string;
 }
+interface RegeneratePostData {
+    customPrompt?: string;
+}
 
 const ContentSchedule: React.FC = () => {
     const location = useLocation();
@@ -51,6 +55,9 @@ const ContentSchedule: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [personaId, setPersonaId] = useState<number | null>(null);
+    const [customPrompt, setCustomPrompt] = useState<string>('');
+
     const [eventData, setEventData] = useState<EventData>({
         eventName: '',
         engagementType: 'Conferences',
@@ -67,12 +74,16 @@ const ContentSchedule: React.FC = () => {
             if (location.state?.generatedPosts) {
                 console.log("Setting posts from location state:", location.state.generatedPosts);
                 setPosts(location.state.generatedPosts);
+                // Set persona ID from location state
+                if (location.state.personaId) {
+                    setPersonaId(location.state.personaId);
+                }
             } else {
                 try {
                     console.log("Fetching posts from API for user:", user?.uid);
                     const idToken = await user?.getIdToken();
                     const response = await axios.get(
-                        `${import.meta.env.VITE_API_URL}/api/schedule/` + user?.uid,
+                        `${import.meta.env.VITE_API_URL}/api/schedule/${user?.uid}`,
                         {
                             headers: {
                                 'Authorization': `Bearer ${idToken}`
@@ -81,6 +92,10 @@ const ContentSchedule: React.FC = () => {
                     );
                     console.log("API Response:", response.data);
                     setPosts(response.data.generated_posts);
+                    // Set persona ID from API response
+                    if (response.data.persona_id) {
+                        setPersonaId(response.data.persona_id);
+                    }
                 } catch (error) {
                     console.error('Error fetching posts:', error);
                 }
@@ -132,17 +147,27 @@ const ContentSchedule: React.FC = () => {
     };
 
     const handleRegeneratePost = async () => {
-        if (!selectedPost || selectedPostIndex === null) return;
+        if (!selectedPost || selectedPostIndex === null || !personaId) {
+            console.error("Missing required data for regeneration:", {
+                selectedPost: !!selectedPost,
+                selectedPostIndex,
+                personaId
+            });
+            return;
+        }
 
         try {
             setIsRegenerating(true);
             const idToken = await user?.getIdToken();
             
-            const personaId = location.state?.personaId;
+            const regenerateData: RegeneratePostData = {};
+            if (customPrompt.trim()) {
+                regenerateData.customPrompt = customPrompt.trim();
+            }
             
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/api/posts/${personaId}/${selectedPostIndex}/regenerate`,
-                {},
+                regenerateData,
                 {
                     headers: {
                         'Authorization': `Bearer ${idToken}`
@@ -153,6 +178,7 @@ const ContentSchedule: React.FC = () => {
             if (response.data.generated_posts) {
                 setPosts(response.data.generated_posts);
                 setSelectedPost(response.data.generated_posts[selectedPostIndex]);
+                setCustomPrompt(''); // Clear the prompt after successful regeneration
             }
         } catch (error) {
             console.error('Error regenerating post:', error);
@@ -344,41 +370,71 @@ const ContentSchedule: React.FC = () => {
 
                 {/* Post Modal */}
                 <Modal open={openModalPost} onClose={handleCloseModalPost}>
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                    }}>
-                        <IconButton
-                            onClick={handleCloseModalPost}
-                            sx={{ position: 'absolute', right: 8, top: 8 }}
-                        >
-                            <CloseIcon />
-                        </IconButton>
-                        {selectedPost && (
-                            <>
-                                <Typography sx={{ mb: 3 }}>
-                                    {selectedPost.Post_content}
-                                </Typography>
-                                <Button
-                                    onClick={handleRegeneratePost}
-                                    disabled={isRegenerating}
-                                    variant="outlined"
-                                    color="primary"
-                                    fullWidth
-                                >
-                                    {isRegenerating ? 'Regenerating...' : 'Regenerate Post'}
-                                </Button>
-                            </>
-                        )}
-                    </Box>
-                </Modal>
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: 4,
+                    borderRadius: 2,
+                }}>
+                    <IconButton
+                        onClick={handleCloseModalPost}
+                        sx={{ position: 'absolute', right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    {selectedPost && (
+                        <>
+                            {/* Removed the level prop and using sx for styling instead */}
+                            <Typography 
+                                sx={{ 
+                                    mb: 3, 
+                                    fontWeight: 'bold',
+                                    fontSize: '1.25rem'  // Equivalent to h6 size
+                                }}
+                            >
+                                Post Content
+                            </Typography>
+                            <Typography 
+                                sx={{ mb: 3 }}
+                            >
+                                {selectedPost.Post_content}
+                            </Typography>
+                            
+                            <FormControl
+                                component="div"
+                                orientation="vertical"
+                                sx={{ mb: 3, width: '100%' }}
+                            >
+                                <FormLabel>Custom Regeneration Prompt (Optional)</FormLabel>
+                                <Textarea
+                                    value={customPrompt}
+                                    onChange={(e) => setCustomPrompt(e.target.value)}
+                                    minRows={3}
+                                    maxRows={6}
+                                    placeholder="Add specific instructions or topics for the regenerated post..."
+                                    sx={{ mt: 1 }}
+                                />
+                            </FormControl>
+
+                            <Button
+                                onClick={handleRegeneratePost}
+                                disabled={isRegenerating}
+                                variant="outlined"
+                                color="primary"
+                                fullWidth
+                                sx={{ mt: 2 }}
+                            >
+                                {isRegenerating ? 'Regenerating...' : 'Regenerate Post'}
+                            </Button>
+                        </>
+                    )}
+                </Box>
+            </Modal>
 
                 {/* Event Modal */}
                 <Modal open={openModalEvent} onClose={handleCloseModalEvent}>
