@@ -228,6 +228,7 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Navbar */}
       <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between h-16 items-center">
@@ -255,18 +256,6 @@ const ChatInterface: React.FC = () => {
                 <FaSignOutAlt className="md:mr-2" />
                 <span className="hidden md:inline">Sign Out</span>
               </button>
-              <button
-                onClick={() => setIsFeedbackModalOpen(true)}
-                className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 z-40"
-              >
-                Help Us Improve
-              </button>
-
-              <FeedbackModal
-                isOpen={isFeedbackModalOpen}
-                onClose={() => setIsFeedbackModalOpen(false)}
-                userEmail={user?.email ?? undefined}
-              />
             </div>
           </div>
         </div>
@@ -316,34 +305,34 @@ const ChatInterface: React.FC = () => {
           {/* Navigation Buttons - Show only when chat is completed */}
           {messages.length > 0 && 
           messages[messages.length - 1].sender === 'bot' && 
-          response?.completed && (  // Instead of checking for specific text
-          <div className="flex flex-col items-center space-y-4 mt-6 p-4 bg-white rounded-lg shadow">
-            <button
-              onClick={() => navigate('/schedule', { 
-                state: {
-                  personaId: response?.schedule?.persona_id,
-                  generatedPosts: response?.schedule?.generated_posts
-                }
-              })}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
-            >
-              <Calendar className="w-5 h-5" />
-              <span>View Content Schedule</span>
-            </button>
-            
-            <button
-              className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
-              disabled
-            >
-              <TrendingUp className="w-5 h-5" />
-              <span>Achievement Negotiator Plan</span>
-            </button>
-            
-            <p className="text-sm text-gray-500 italic mt-2">
-              Achievement Negotiator Plan - Coming Soon!
-            </p>
-          </div>
-        )}
+          response?.completed && (
+            <div className="flex flex-col items-center space-y-4 mt-6 p-4 bg-white rounded-lg shadow">
+              <button
+                onClick={() => navigate('/schedule', { 
+                  state: {
+                    personaId: response?.schedule?.persona_id,
+                    generatedPosts: response?.schedule?.generated_posts
+                  }
+                })}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+              >
+                <Calendar className="w-5 h-5" />
+                <span>View Content Schedule</span>
+              </button>
+              
+              <button
+                onClick={() => navigate('/negotiator')}
+                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center justify-center space-x-2"
+              >
+                <TrendingUp className="w-5 h-5" />
+                <span>Achievement Negotiator Plan</span>
+              </button>
+              
+              <p className="text-sm text-purple-600 font-medium mt-2">
+                Create your personalized development roadmap →
+              </p>
+            </div>
+          )}
 
           {isLoading && (
             <div className="flex justify-start mb-4">
@@ -395,6 +384,20 @@ const ChatInterface: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Feedback Button */}
+      <button
+        onClick={() => setIsFeedbackModalOpen(true)}
+        className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 z-40"
+      >
+        Help Us Improve
+      </button>
+
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        userEmail={user?.email ?? undefined}
+      />
     </div>
   );
 };

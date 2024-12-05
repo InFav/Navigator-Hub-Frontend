@@ -8,6 +8,8 @@ import ContentSchedule from './components/ContentSchedule';
 import Dashboard from './components/Dashboard';
 import { useEffect } from 'react';
 import { AuthContextProvider } from './context/AuthContext';
+import NegotiatorChat from './components/NegotiatorChat';
+import AchievementPlans from './components/AchievementPlans';
 
 const initializeDarkMode = () => {
   const savedTheme = localStorage.getItem('theme');
@@ -106,6 +108,22 @@ function App() {
                 </RequireAuth>
               }
             />
+            <Route
+              path="/negotiator"
+              element={
+                <RequireAuth>
+                  <NegotiatorChat />
+                </RequireAuth>
+              }
+            />
+              <Route
+                path="/achievement-plans"
+                element={
+                  <RequireAuth>
+                    <AchievementPlans />
+                  </RequireAuth>
+                }
+              />
             
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
