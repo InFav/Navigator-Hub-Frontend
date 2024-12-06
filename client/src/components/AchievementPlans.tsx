@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Book, Users, Calendar, ExternalLink } from 'lucide-react';
+import { Book, Users, Calendar, ExternalLink, MessageCircle } from 'lucide-react';
+import { FaSignOutAlt, FaUser, FaHome } from 'react-icons/fa';
 import { PlanData } from '../types/plans';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { FaUser } from 'react-icons/fa';
 
 interface PlanProps {
     type: string;
@@ -108,9 +108,18 @@ const PlanCard: React.FC<PlanProps> = ({ type, data }) => {
 const AchievementPlans: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const [loading, setLoading] = useState(false);
     const [planData, setPlanData] = useState<LocationState['plans'] | null>(null);
+
+    const handleSignOut = async () => {
+      try {
+        await signOut();
+        navigate('/login');
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    };
   
     useEffect(() => {
       const fetchPlans = async () => {
@@ -168,34 +177,75 @@ const AchievementPlans: React.FC = () => {
       );
     }
   
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-10">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between h-16 items-center">
+return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {/* Sidebar */}
+      <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30">
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Navigator Hub
+            </h1>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 p-4 space-y-2">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <FaHome className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <span className="ml-3">Dashboard</span>
+            </button>
+
+            <button 
+              onClick={() => navigate('/chat')}
+              className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <span className="ml-3">Chat with Aru</span>
+            </button>
+
+            <button 
+              onClick={() => navigate('/schedule')}
+              className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <span className="ml-3">Content Calendar</span>
+            </button>
+          </nav>
+
+          {/* User Profile Section */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Achievement Plans
-                </h1>
-              </div>
-              
-              <div className="flex items-center space-x-2 md:space-x-4">
-                <div className="flex items-center space-x-2">
-                  {user?.photoURL ? (
-                    <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
-                  ) : (
-                    <FaUser className="w-6 h-6 text-gray-600" />
-                  )}
-                  <span className="text-sm font-medium text-gray-700 hidden md:inline">
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                ) : (
+                  <FaUser className="w-8 h-8 text-gray-400" />
+                )}
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     {user?.displayName || user?.email}
-                  </span>
+                  </p>
                 </div>
               </div>
+              <button
+                onClick={handleSignOut}
+                className="p-2 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                title="Sign Out"
+              >
+                <FaSignOutAlt className="w-5 h-5" />
+              </button>
             </div>
           </div>
-        </nav>
-  
-        <div className="max-w-7xl mx-auto px-4 mt-20">
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="ml-64 flex-1">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Achievement Plans</h1>
             <p className="text-lg text-gray-600">
@@ -203,17 +253,17 @@ const AchievementPlans: React.FC = () => {
               networking suggestions, and community events.
             </p>
           </div>
-  
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.data && (
-             <>   
-            <PlanCard type="achievable" data={plans.data.achievable} />
-            <PlanCard type="negotiated" data={plans.data.negotiated} />
-            <PlanCard type="ambitious" data={plans.data.ambitious} />
-            </>
+            {plans?.data && (
+              <>
+                <PlanCard type="achievable" data={plans.data.achievable} />
+                <PlanCard type="negotiated" data={plans.data.negotiated} />
+                <PlanCard type="ambitious" data={plans.data.ambitious} />
+              </>
             )}
           </div>
-  
+
           <div className="mt-8 flex justify-center space-x-4">
             <button
               onClick={() => navigate('/negotiator')}
@@ -230,7 +280,8 @@ const AchievementPlans: React.FC = () => {
           </div>
         </div>
       </div>
-    );
-  };
-  
-  export default AchievementPlans;
+    </div>
+  );
+};
+
+export default AchievementPlans;

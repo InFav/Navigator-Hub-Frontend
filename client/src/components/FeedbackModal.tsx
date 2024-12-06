@@ -17,6 +17,10 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
+      
+      const now = new Date();
+      const timestamp = now.toISOString().split('.')[0]; 
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/feedback`, {
         method: 'POST',
         headers: {
@@ -27,17 +31,19 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
           type: feedbackType,
           feedback: feedbackText,
           userEmail,
-          timestamp: new Date().toISOString(),
+          timestamp
         }),
       });
-
-      if (response.ok) {
-        alert('Thank you for your feedback!');
-        onClose();
-      } else {
-        throw new Error('Failed to submit feedback');
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to submit feedback');
       }
+  
+      alert('Thank you for your feedback!');
+      onClose();
     } catch (error) {
+      console.error('Feedback submission error:', error);
       alert('Failed to submit feedback. Please try again.');
     } finally {
       setIsSubmitting(false);

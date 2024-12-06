@@ -3,12 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { FaSignOutAlt, FaUser } from 'react-icons/fa';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FeedbackModal from './FeedbackModal';
+import { Calendar, MessageCircle } from 'lucide-react';
+import { FaSignOutAlt, FaUser, FaHome } from 'react-icons/fa';
 
 import {
     Box,
@@ -290,207 +291,220 @@ const ContentSchedule: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            Navigator Hub
-                        </h1>
-                        
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                                {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
-                                ) : (
-                                    <FaUser className="w-6 h-6 text-gray-600" />
-                                )}
-                                <span className="text-sm font-medium text-gray-700">
-                                    {user?.displayName || user?.email}
-                                </span>
-                            </div>
-                            <button
-                                onClick={handleSignOut}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                            >
-                                <FaSignOutAlt className="mr-2" />
-                                Sign Out
-                            </button>
-                            <button
-                            onClick={() => setIsFeedbackModalOpen(true)}
-                            className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 z-40"
-                            >
-                            Help Us Improve
-                            </button>
-
-                            <FeedbackModal
-                            isOpen={isFeedbackModalOpen}
-                            onClose={() => setIsFeedbackModalOpen(false)}
-                            userEmail={user?.email ?? undefined}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Main Content */}
-            <div className="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-3">Your Content Calendar</h2>
-                    <p className="text-lg text-gray-600">
-                        Here's your AI-generated posting schedule. Add events, customize posts, and manage your content.
-                    </p>
-                </div>
-
-                <Box sx={{ backgroundColor: 'white', p: 4, borderRadius: 2, boxShadow: 1 }}>
-                    {/* Calendar Header */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                        <IconButton onClick={handlePrevMonth}>
-                            <ArrowBackIosIcon />
-                        </IconButton>
-                        <Typography
-                            sx={{ 
-                                fontSize: '1.5rem',
-                                fontWeight: 'bold' 
-                            }}
-                        >
-                            {currentDate.format('MMMM YYYY')}
-                        </Typography>
-                        <IconButton onClick={handleNextMonth}>
-                            <ArrowForwardIosIcon />
-                        </IconButton>
-                    </Box>
-
-                    {/* Calendar Grid */}
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                        {renderCalendar()}
-                    </Box>
-                </Box>
-
-                {/* Post Modal */}
-                <Modal open={openModalPost} onClose={handleCloseModalPost}>
-                <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 400,
-                    bgcolor: 'background.paper',
-                    boxShadow: 24,
-                    p: 4,
-                    borderRadius: 2,
-                }}>
-                    <IconButton
-                        onClick={handleCloseModalPost}
-                        sx={{ position: 'absolute', right: 8, top: 8 }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                    {selectedPost && (
-                        <>
-                            {/* Removed the level prop and using sx for styling instead */}
-                            <Typography 
-                                sx={{ 
-                                    mb: 3, 
-                                    fontWeight: 'bold',
-                                    fontSize: '1.25rem'  // Equivalent to h6 size
-                                }}
-                            >
-                                Post Content
-                            </Typography>
-                            <Typography 
-                                sx={{ mb: 3 }}
-                            >
-                                {selectedPost.Post_content}
-                            </Typography>
-                            
-                            <FormControl
-                                component="div"
-                                orientation="vertical"
-                                sx={{ mb: 3, width: '100%' }}
-                            >
-                                <FormLabel>Custom Regeneration Prompt (Optional)</FormLabel>
-                                <Textarea
-                                    value={customPrompt}
-                                    onChange={(e) => setCustomPrompt(e.target.value)}
-                                    minRows={3}
-                                    maxRows={6}
-                                    placeholder="Add specific instructions or topics for the regenerated post..."
-                                    sx={{ mt: 1 }}
-                                />
-                            </FormControl>
-
-                            <Button
-                                onClick={handleRegeneratePost}
-                                disabled={isRegenerating}
-                                variant="outlined"
-                                color="primary"
-                                fullWidth
-                                sx={{ mt: 2 }}
-                            >
-                                {isRegenerating ? 'Regenerating...' : 'Regenerate Post'}
-                            </Button>
-                        </>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+          {/* Sidebar */}
+          <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30">
+            <div className="flex flex-col h-full">
+              {/* Logo */}
+              <div className="flex items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Navigator Hub
+                </h1>
+              </div>
+      
+              {/* Navigation Links */}
+              <nav className="flex-1 p-4 space-y-2">
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <FaHome className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <span className="ml-3">Dashboard</span>
+                </button>
+      
+                <button 
+                  onClick={() => navigate('/chat')}
+                  className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <span className="ml-3">Chat with Aru</span>
+                </button>
+      
+                <button 
+                  onClick={() => navigate('/schedule')}
+                  className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 bg-gray-100 dark:bg-gray-700"
+                >
+                  <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <span className="ml-3">Content Calendar</span>
+                </button>
+              </nav>
+      
+              {/* User Profile Section */}
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {user?.photoURL ? (
+                      <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                    ) : (
+                      <FaUser className="w-8 h-8 text-gray-400" />
                     )}
-                </Box>
-            </Modal>
-
-                {/* Event Modal */}
-                <Modal open={openModalEvent} onClose={handleCloseModalEvent}>
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                    }}>
-                        <IconButton
-                            onClick={handleCloseModalEvent}
-                            sx={{ position: 'absolute', right: 8, top: 8 }}
-                        >
-                            <CloseIcon />
-                        </IconButton>
-                        <Typography
-                            sx={{ 
-                                fontSize: '1.25rem',
-                                fontWeight: 'bold',
-                                mb: 2 
-                            }}
-                        >
-                            Add Event
-                        </Typography>
-                        <FormControl sx={{ mb: 2 }}>
-                            <FormLabel>Event Name</FormLabel>
-                            <Textarea
-                                value={eventData.eventName}
-                                onChange={(e) => setEventData({ ...eventData, eventName: e.target.value })}
-                            />
-                        </FormControl>
-                        <FormControl sx={{ mb: 2 }}>
-                            <FormLabel>Type</FormLabel>
-                            <Select
-                                value={eventData.engagementType}
-                                onChange={(_, value) => setEventData({ ...eventData, engagementType: value || 'Conferences' })}
-                            >
-                                <Option value="Conferences">Conferences</Option>
-                                <Option value="Meet-ups">Meet-ups</Option>
-                                <Option value="Twitter Content">Twitter Content</Option>
-                                <Option value="Instagram Content">Instagram Content</Option>
-                            </Select>
-                        </FormControl>
-                        <Button onClick={handleEventSubmit} fullWidth>
-                            Save Event
-                        </Button>
-                    </Box>
-                </Modal>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {user?.displayName || user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                    title="Sign Out"
+                  >
+                    <FaSignOutAlt className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
+      
+          {/* Main Content */}
+          <div className="ml-64 flex-1">
+            <div className="p-8">
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">Your Content Calendar</h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300">
+                  Here's your AI-generated posting schedule. Add events, customize posts, and manage your content.
+                </p>
+              </div>
+      
+              <Box sx={{ backgroundColor: 'white', p: 4, borderRadius: 2, boxShadow: 1 }}>
+                {/* Calendar Header */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                  <IconButton onClick={handlePrevMonth}>
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                  <Typography sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                    {currentDate.format('MMMM YYYY')}
+                  </Typography>
+                  <IconButton onClick={handleNextMonth}>
+                    <ArrowForwardIosIcon />
+                  </IconButton>
+                </Box>
+      
+                {/* Calendar Grid */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  {renderCalendar()}
+                </Box>
+              </Box>
+      
+              {/* Post Modal */}
+              <Modal open={openModalPost} onClose={handleCloseModalPost}>
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 400,
+                  bgcolor: 'background.paper',
+                  boxShadow: 24,
+                  p: 4,
+                  borderRadius: 2,
+                }}>
+                  <IconButton
+                    onClick={handleCloseModalPost}
+                    sx={{ position: 'absolute', right: 8, top: 8 }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                  {selectedPost && (
+                    <>
+                      <Typography sx={{ mb: 3, fontWeight: 'bold', fontSize: '1.25rem' }}>
+                        Post Content
+                      </Typography>
+                      <Typography sx={{ mb: 3 }}>
+                        {selectedPost.Post_content}
+                      </Typography>
+                      
+                      <FormControl component="div" orientation="vertical" sx={{ mb: 3, width: '100%' }}>
+                        <FormLabel>Custom Regeneration Prompt (Optional)</FormLabel>
+                        <Textarea
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          minRows={3}
+                          maxRows={6}
+                          placeholder="Add specific instructions or topics for the regenerated post..."
+                          sx={{ mt: 1 }}
+                        />
+                      </FormControl>
+      
+                      <Button
+                        onClick={handleRegeneratePost}
+                        disabled={isRegenerating}
+                        variant="outlined"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 2 }}
+                      >
+                        {isRegenerating ? 'Regenerating...' : 'Regenerate Post'}
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              </Modal>
+      
+              {/* Event Modal */}
+              <Modal open={openModalEvent} onClose={handleCloseModalEvent}>
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 400,
+                  bgcolor: 'background.paper',
+                  boxShadow: 24,
+                  p: 4,
+                  borderRadius: 2,
+                }}>
+                  <IconButton
+                    onClick={handleCloseModalEvent}
+                    sx={{ position: 'absolute', right: 8, top: 8 }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 'bold', mb: 2 }}>
+                    Add Event
+                  </Typography>
+                  <FormControl sx={{ mb: 2 }}>
+                    <FormLabel>Event Name</FormLabel>
+                    <Textarea
+                      value={eventData.eventName}
+                      onChange={(e) => setEventData({ ...eventData, eventName: e.target.value })}
+                    />
+                  </FormControl>
+                  <FormControl sx={{ mb: 2 }}>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      value={eventData.engagementType}
+                      onChange={(_, value) => setEventData({ ...eventData, engagementType: value || 'Conferences' })}
+                    >
+                      <Option value="Conferences">Conferences</Option>
+                      <Option value="Meet-ups">Meet-ups</Option>
+                      <Option value="Twitter Content">Twitter Content</Option>
+                      <Option value="Instagram Content">Instagram Content</Option>
+                    </Select>
+                  </FormControl>
+                  <Button onClick={handleEventSubmit} fullWidth>
+                    Save Event
+                  </Button>
+                </Box>
+              </Modal>
+            </div>
+      
+            {/* Feedback Button */}
+            <button
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 z-40"
+            >
+              Help Us Improve
+            </button>
+      
+            <FeedbackModal
+              isOpen={isFeedbackModalOpen}
+              onClose={() => setIsFeedbackModalOpen(false)}
+              userEmail={user?.email ?? undefined}
+            />
+          </div>
         </div>
-    );
+      );
 };
 
 export default ContentSchedule;
