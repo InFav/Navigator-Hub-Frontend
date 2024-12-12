@@ -8,6 +8,7 @@ import { Message } from '../types/chat';
 import { Calendar, TrendingUp, MessageCircle } from 'lucide-react';
 import FeedbackModal from './FeedbackModal';
 import { FaHome } from 'react-icons/fa';
+import ChatMessage from './ChatMessage';
 
 type UserRole = 'mentor' | 'mentee' | null;
 
@@ -25,8 +26,10 @@ interface ChatResponse {
       };
     };
   };
+  next_message?: string;
+  send_next?: boolean;
+  formatted?: boolean;
 }
-
 interface ChatHistory {
   messages: {
     text: string;
@@ -118,23 +121,46 @@ const ChatInterface: React.FC = () => {
           setResponse({
             response: "Previous chat completed",
             completed: true,
-            schedule: undefined // You'll need to fetch this if needed
+            schedule: undefined 
           });
         }
       } else if (!stateResponse.data.completed && !hasInitialized.current) {
-        // Only show initial messages for new users
         const initialMessages: Message[] = [
           {
-            text: "Hi I am Aru, your personal branding assistant powered by Navigator Hub. I am here to save you time in execution of a growth strategy via LinkedIn engagement.",
-            sender: 'bot'
+            text: JSON.stringify({
+              text: "Hi I am Aru, your personal branding assistant powered by Navigator Hub. I am here to save you time in execution of a growth strategy via LinkedIn engagement.",
+              emoji: "✨",
+              isWelcome: true,
+              style: {
+                gradient: true,
+                iconSize: "lg"
+              }
+            }),
+            sender: 'bot',
+            formatted: true
           },
           {
-            text: "What I need from you is data for strategizing and understanding your career story for the best execution possible.",
-            sender: 'bot'
+            text: JSON.stringify({
+              text: "What I need from you is data for strategizing and understanding your career story for the best execution possible.",
+              emoji: "📊",
+              isWelcome: true,
+              style: {
+                gradient: false,
+                iconSize: "md"
+              }
+            }),
+            sender: 'bot',
+            formatted: true
           },
           {
-            text: "What's your First and Last Name?",
-            sender: 'bot'
+            text: JSON.stringify({
+              number: 1,
+              total: 5,
+              text: "Can you tell me your name.",
+              emoji: "👋"
+            }),
+            sender: 'bot',
+            formatted: true
           }
         ];
 
@@ -159,19 +185,18 @@ const ChatInterface: React.FC = () => {
 
   const sendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return;
-
+  
     const userMessage: Message = {
       text: message,
       sender: 'user'
     };
-
+  
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-
+  
     try {
       const idToken = await user?.getIdToken();
-      
       const apiResponse = await axios.post<ChatResponse>(
         `${import.meta.env.VITE_API_URL}/chat`, 
         { message },
@@ -187,24 +212,46 @@ const ChatInterface: React.FC = () => {
       if (apiResponse.data.role) {
         setUserRole(apiResponse.data.role as UserRole);
       }
-
+  
       if (apiResponse.data.phase) {
         setCurrentPhase(apiResponse.data.phase);
       }
-
-      const botMessage: Message = {
-        text: apiResponse.data.response,
-        sender: 'bot'
-      };
-      setMessages(prevMessages => [...prevMessages, botMessage]);
-
+  
+      // Handle both main response and next message in a single state update
+      if (apiResponse.data.next_message) {
+        // Add both messages with a slight delay between them
+        const mainMessage: Message = {
+          text: apiResponse.data.response,
+          sender: 'bot',
+          formatted: apiResponse.data.formatted || false
+        };
+        
+        setMessages(prevMessages => [...prevMessages, mainMessage]);
+        
+        // Add the next message after a delay
+        setTimeout(() => {
+          const nextMessage: Message = {
+            text: apiResponse.data.next_message!,
+            sender: 'bot',
+            formatted: true
+          };
+          setMessages(prevMessages => [...prevMessages, nextMessage]);
+        }, 1500);
+      } else {
+        // If there's no next message, just add the main response
+        setMessages(prevMessages => [...prevMessages, {
+          text: apiResponse.data.response,
+          sender: 'bot',
+          formatted: apiResponse.data.formatted || false
+        }]);
+      }
+  
     } catch (err) {
       console.error('Chat error:', err);
-      const errorMessage: Message = {
+      setMessages(prevMessages => [...prevMessages, {
         text: 'I apologize, but I encountered an error. Could you please try again?',
         sender: 'bot'
-      };
-      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -301,28 +348,13 @@ const ChatInterface: React.FC = () => {
         {/* Chat Container */}
         <div className="max-w-4xl w-full mx-auto">
           <div className="h-[calc(100vh-180px)] overflow-y-auto p-4 space-y-4">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-              >
-                <div
-                  className={`relative flex flex-col max-w-[85%] rounded-lg px-4 py-2 ${
-                    msg.sender === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                  }`}
-                  style={{
-                    width: 'fit-content',
-                    overflowWrap: 'anywhere',
-                    wordBreak: 'break-word',
-                    whiteSpace: 'pre-wrap'
-                  }}
-                >
-                  <span className="inline-block">{msg.text}</span>
-                </div>
-              </div>
-            ))}
+          {messages.map((msg, index) => (
+            <ChatMessage 
+              key={index}
+              message={msg}
+              isBot={msg.sender === 'bot'}
+            />
+          ))}
   
             {isLoading && (
               <div className="flex justify-start mb-4">
